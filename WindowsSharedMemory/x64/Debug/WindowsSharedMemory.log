@@ -1,4 +1,7 @@
-﻿  ConfigToolbox.cpp
+﻿  BasicIOHandler.cpp
+  ConfigToolbox.cpp
+  FileIOHandler.cpp
+  SharedMemoryIOHandler.cpp
   SharedMemoryToolbox.cpp
   Generating Code...
   WindowsSharedMemory.vcxproj -> C:\Users\NikiBot\source\repos\WindowsSharedMemory_WorkTask\x64\Debug\WindowsSharedMemory.lib

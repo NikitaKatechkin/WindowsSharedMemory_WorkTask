@@ -128,11 +128,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BasicIOHandler.h" />
     <ClInclude Include="ConfigToolbox.h" />
+    <ClInclude Include="FileIOHandler.h" />
+    <ClInclude Include="SharedMemoryIOHandler.h" />
     <ClInclude Include="SharedMemoryToolbox.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BasicIOHandler.cpp" />
     <ClCompile Include="ConfigToolbox.cpp" />
+    <ClCompile Include="FileIOHandler.cpp" />
+    <ClCompile Include="SharedMemoryIOHandler.cpp" />
     <ClCompile Include="SharedMemoryToolbox.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

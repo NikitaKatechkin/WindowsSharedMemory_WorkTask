@@ -1,44 +1,67 @@
 #include <WindowsSharedMemory/SharedMemoryToolbox.h>
 #include <WindowsSharedMemory/ConfigToolbox.h>
+#include <WindowsSharedMemory/FileIOHandler.h>
+#include <WindowsSharedMemory/SharedMemoryIOHandler.h>
+#include <utility>
 
-int main()
+enum class IOHandlerType
 {
-    const unsigned int BUF_SIZE = 256;
-    const std::wstring SHARED_MEMORY_NAME = L"Global\\MyFileMappingObject";
+    FileHandler = 0,
+    SharedMemoryHandler
+};
 
-    HANDLE mapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS,
-                                      FALSE, 
-                                      SHARED_MEMORY_NAME.c_str());
-    if (mapFile != NULL)
+using Handler = std::pair<BasicIOHandler*, IOHandlerType>;
+
+int main(int argc, char* argv[])
+{
+    for (size_t index = 0; index < argc; index++)
     {
-        std::wcout << L"Successfully open file mapping object." << std::endl;
-
-        const char* viewBuffer = static_cast<const char*>(
-            SharedMemoryToolbox::MapSharedMemoryView(mapFile, BUF_SIZE));
-
-        if (viewBuffer != nullptr)
-        {
-            std::wcout << L"Successfully map view of file." << std::endl;
-
-            ConfigToolbox::WriteConfig("cfg.txt", viewBuffer);
-
-            SharedMemoryToolbox::UnmapSharedMemoryView(viewBuffer);
-        }
-        else
-        {
-            std::wcout << L"Failed to map view of file." << std::endl;
-            std::wcout << L"GLE = " << GetLastError() << "." << std::endl;
-        }
-
-        CloseHandle(mapFile);
+        std::cout << "Index[" << index << "]: " << std::string(argv[index]) << std::endl;
     }
-    else
+
+    std::string READER_RESOURCE_NAME = std::string(argv[2]);
+    std::string WRITTER_RESOURCE_NAME = std::string(argv[4]).c_str();
+
+    Handler reader = Handler(nullptr, IOHandlerType((static_cast<int>(argv[1][0]) - 48)));
+    Handler writter = Handler(nullptr, IOHandlerType((static_cast<int>(argv[3][0]) - 48)));
+
+    switch (reader.second)
     {
-        std::wcout << L"Failed to open file mapping object." << std::endl;
-        std::wcout << L"GLE = " << GetLastError() << "." << std::endl;
+    case IOHandlerType::FileHandler:
+        reader.first = new FileIOHandler(READER_RESOURCE_NAME);
+        break;
+    case IOHandlerType::SharedMemoryHandler:
+        reader.first = new SharedMemoryIOHandler(READER_RESOURCE_NAME);
+        break;
+    default:
+        break;
+    }
+
+    switch (writter.second)
+    {
+    case IOHandlerType::FileHandler:
+        writter.first = new FileIOHandler(WRITTER_RESOURCE_NAME);
+        break;
+    case IOHandlerType::SharedMemoryHandler:
+        writter.first = new SharedMemoryIOHandler(WRITTER_RESOURCE_NAME);
+        break;
+    default:
+        break;
+    }
+
+    std::string fileData;
+    if (reader.first->Read(fileData) == true)
+    {
+        if (writter.first->Write(fileData.c_str()) == true)
+        {
+            std::cout << "Nice!!!" << std::endl;
+        }
     }
 
     system("pause");
+
+    delete reader.first;
+    delete writter.first;
 
     return 0;
 }
