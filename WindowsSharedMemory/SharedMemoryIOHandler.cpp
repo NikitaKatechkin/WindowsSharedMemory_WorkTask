@@ -45,9 +45,12 @@ bool SharedMemoryIOHandler::Write(const char* data)
 
 	if (isSuccess == true)
 	{
-		CopyMemory(const_cast<PVOID>(static_cast<const void*>(sharedMemoryView)),
-				   data, 
-				   (strlen(data) * sizeof(char)));
+		if (data != nullptr)
+		{
+			CopyMemory(const_cast<PVOID>(static_cast<const void*>(sharedMemoryView)),
+				data,
+				(strlen(data) * sizeof(char)));
+		}
 
 		UnmapViewOfFile(sharedMemoryView);
 	}

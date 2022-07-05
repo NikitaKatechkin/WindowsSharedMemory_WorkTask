@@ -1,0 +1,1 @@
+C:\Users\NikiBot\source\repos\WindowsSharedMemory_WorkTask\TestSharedMemoryIOHandler\x64\Debug\TestSharedMemoryIOHandler.vcxproj.CopyComplete

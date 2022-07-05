@@ -1,1 +1,3 @@
 .vs/*
+.TestFileIOHandler/x64/*
+.TestSharedMemoryIOHandler/x64/*

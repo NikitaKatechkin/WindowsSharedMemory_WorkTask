@@ -18,6 +18,7 @@ bool FileIOHandler::Read(std::string& buffer)
 		{
 			buffer += (tmp_line + "\n");
 		}
+		buffer.pop_back();
 	}
 
 	readFile.close();
@@ -33,9 +34,12 @@ bool FileIOHandler::Write(const char* data)
 
 	if (isSuccess == true)
 	{
-		for (int char_index = 0; char_index < strlen(data); char_index++)
+		if (data != nullptr)
 		{
-			writeFile << static_cast<char>(data[char_index]);
+			for (int char_index = 0; char_index < strlen(data); char_index++)
+			{
+				writeFile << static_cast<char>(data[char_index]);
+			}
 		}
 	}
 
