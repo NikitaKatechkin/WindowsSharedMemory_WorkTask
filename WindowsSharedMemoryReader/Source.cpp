@@ -2,7 +2,9 @@
 #include <WindowsSharedMemory/ConfigToolbox.h>
 #include <WindowsSharedMemory/FileIOHandler.h>
 #include <WindowsSharedMemory/SharedMemoryIOHandler.h>
+#include <WindowsSharedMemory/Logger.h>
 #include <utility>
+#include <memory>
 
 enum class IOHandlerType
 {
@@ -10,58 +12,59 @@ enum class IOHandlerType
     SharedMemoryHandler
 };
 
-using Handler = std::pair<BasicIOHandler*, IOHandlerType>;
+using BasicIOHandlerPtr = std::unique_ptr<BasicIOHandler>;
+using Handler = std::pair<BasicIOHandlerPtr, IOHandlerType>;
 
 int main(int argc, char* argv[])
 {
-    for (size_t index = 0; index < argc; index++)
+    if (argc != 5)
     {
-        std::cout << "Index[" << index << "]: " << std::string(argv[index]) << std::endl;
+        return -1;
     }
 
-    std::string READER_RESOURCE_NAME = std::string(argv[2]);
-    std::string WRITTER_RESOURCE_NAME = std::string(argv[4]).c_str();
+    const std::string READER_RESOURCE_NAME = std::string(argv[2]);
+    const std::string WRITTER_RESOURCE_NAME = std::string(argv[4]);
 
-    Handler reader = Handler(nullptr, IOHandlerType((static_cast<int>(argv[1][0]) - 48)));
-    Handler writter = Handler(nullptr, IOHandlerType((static_cast<int>(argv[3][0]) - 48)));
+    const IOHandlerType READER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[1][0]) - 48));
+    const IOHandlerType WRITTER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[3][0]) - 48));
 
-    switch (reader.second)
-    {
-    case IOHandlerType::FileHandler:
-        reader.first = new FileIOHandler(READER_RESOURCE_NAME);
-        break;
-    case IOHandlerType::SharedMemoryHandler:
-        reader.first = new SharedMemoryIOHandler(READER_RESOURCE_NAME);
-        break;
-    default:
-        break;
-    }
+    Handler reader = Handler(nullptr, READER_RESOURCE_TYPE);
+    Handler writter = Handler(nullptr, WRITTER_RESOURCE_TYPE);
 
-    switch (writter.second)
-    {
-    case IOHandlerType::FileHandler:
-        writter.first = new FileIOHandler(WRITTER_RESOURCE_NAME);
-        break;
-    case IOHandlerType::SharedMemoryHandler:
-        writter.first = new SharedMemoryIOHandler(WRITTER_RESOURCE_NAME);
-        break;
-    default:
-        break;
-    }
+    auto HandlerAssigner = [](Handler& handler, const std::string& resourcePath) -> void {
+        switch (handler.second)
+        {
+        case IOHandlerType::FileHandler:
+            handler.first = BasicIOHandlerPtr(new FileIOHandler(resourcePath));
+            break;
+        case IOHandlerType::SharedMemoryHandler:
+            handler.first = BasicIOHandlerPtr(new SharedMemoryIOHandler(resourcePath));
+            break;
+        default:
+            std::cout << "Unknown resource type were passed." << std::endl;
+            break;
+        };
+    };
+
+    HandlerAssigner(reader, READER_RESOURCE_NAME);
+    HandlerAssigner(writter, WRITTER_RESOURCE_NAME);
+
+    Logger logger(true);
 
     std::string fileData;
-    if (reader.first->Read(fileData) == true)
+    fileData.resize(256);
+
+    if (reader.first->Read(&fileData[0], fileData.size()) == true)
     {
-        if (writter.first->Write(fileData.c_str()) == true)
+        logger.AddLog("[Resource data]: " + fileData);
+
+        if (writter.first->Write(fileData.c_str(), fileData.length()) == true)
         {
-            std::cout << "Nice!!!" << std::endl;
+            logger.AddLog("Data successfully written to " + WRITTER_RESOURCE_NAME);
         }
     }
 
     system("pause");
-
-    delete reader.first;
-    delete writter.first;
 
     return 0;
 }

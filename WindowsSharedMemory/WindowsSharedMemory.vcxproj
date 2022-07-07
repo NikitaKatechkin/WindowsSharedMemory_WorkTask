@@ -131,6 +131,7 @@
     <ClInclude Include="BasicIOHandler.h" />
     <ClInclude Include="ConfigToolbox.h" />
     <ClInclude Include="FileIOHandler.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="SharedMemoryIOHandler.h" />
     <ClInclude Include="SharedMemoryToolbox.h" />
   </ItemGroup>
@@ -138,6 +139,7 @@
     <ClCompile Include="BasicIOHandler.cpp" />
     <ClCompile Include="ConfigToolbox.cpp" />
     <ClCompile Include="FileIOHandler.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="SharedMemoryIOHandler.cpp" />
     <ClCompile Include="SharedMemoryToolbox.cpp" />
   </ItemGroup>

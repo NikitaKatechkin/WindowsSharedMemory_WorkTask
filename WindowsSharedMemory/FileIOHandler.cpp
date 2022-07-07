@@ -1,49 +1,60 @@
 #include "FileIOHandler.h"
 
 FileIOHandler::FileIOHandler(const std::string& resourcePath):
-	BasicIOHandler(resourcePath)
+	BasicIOHandler(resourcePath), m_fileStream(resourcePath, std::ios::in | std::ios::out)
 {
+	
 }
 
-bool FileIOHandler::Read(std::string& buffer)
+FileIOHandler::~FileIOHandler()
 {
-	std::ifstream readFile(m_resourcePath);
+	m_fileStream.close();
+}
 
-	bool isSuccess = readFile.is_open();
-	std::string tmp_line;
-	
+bool FileIOHandler::Read(char* buffer, size_t charToRead)
+{
+	bool isSuccess = m_fileStream.is_open();
+
 	if (isSuccess == true)
 	{
-		while (std::getline(readFile, tmp_line))
-		{
-			buffer += (tmp_line + "\n");
-		}
-		buffer.pop_back();
-	}
+		std::string file;
+		std::string tmp_line;
 
-	readFile.close();
+		while (std::getline(m_fileStream, tmp_line))
+		{
+			file += tmp_line + "\n";
+		}
+		file.pop_back();
+
+		charToRead = (charToRead > file.length()) ? file.length() : charToRead;
+		memcpy_s(buffer, charToRead, file.c_str(), file.length());
+	}
 
 	return isSuccess;
 }
 
-bool FileIOHandler::Write(const char* data)
+bool FileIOHandler::Write(const char* data, size_t dataSize)
 {
-	std::ofstream writeFile(m_resourcePath);
-
-	bool isSuccess = writeFile.is_open();
+	bool isSuccess = m_fileStream.is_open();
 
 	if (isSuccess == true)
 	{
 		if (data != nullptr)
 		{
-			for (int char_index = 0; char_index < strlen(data); char_index++)
+			for (int char_index = 0; char_index < dataSize; char_index++)
 			{
-				writeFile << static_cast<char>(data[char_index]);
+				m_fileStream << static_cast<char>(data[char_index]);
 			}
 		}
 	}
 
-	writeFile.close();
-
 	return isSuccess;
 }
+
+void FileIOHandler::ResetPosition()
+{
+	m_fileStream.clear();
+	m_fileStream.seekg(0, std::ios::beg);
+}
+
+

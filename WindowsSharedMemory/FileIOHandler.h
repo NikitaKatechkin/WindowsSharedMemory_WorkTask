@@ -8,9 +8,12 @@ class FileIOHandler final : public BasicIOHandler
 {
 public:
 	FileIOHandler(const std::string& resourcePath);
-	~FileIOHandler() = default;
+	virtual ~FileIOHandler();
 
-	bool Read(std::string& buffer) override;
-	bool Write(const char* data) override;
+	virtual bool Read(char* buffer, size_t charToRead) override;
+	virtual bool Write(const char* data, size_t dataSize) override;
+
+	void ResetPosition();
 protected:
+	std::fstream m_fileStream;
 };

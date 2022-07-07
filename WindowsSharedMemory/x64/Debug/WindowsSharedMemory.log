@@ -1,6 +1,7 @@
 ﻿  BasicIOHandler.cpp
   ConfigToolbox.cpp
   FileIOHandler.cpp
+  Logger.cpp
   SharedMemoryIOHandler.cpp
   SharedMemoryToolbox.cpp
   Generating Code...

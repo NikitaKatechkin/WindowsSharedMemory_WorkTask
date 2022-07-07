@@ -1,59 +1,59 @@
 #include "pch.h"
 
 #include <WindowsSharedMemory/FileIOHandler.h>
+#include <memory>
 
 const std::string globalValidName = "cfg.txt";
 
-const std::string messageToWrite = "TESTING_STRING";
+const size_t MESSAGE_SIZE = 256;
+
+std::string messageToWrite = "TESTING_STRING";
 const char* fakeMessageToWrite = nullptr;
 
 TEST(FileIOHandlerTestCase, CreationTest)
 {
-	FileIOHandler* testIO = new FileIOHandler(globalValidName);
-	delete testIO;
+	FileIOHandler testIO(globalValidName);
 }
 
 TEST(FileIOHandlerTestCase, WritePosititveTest)
 {
-	FileIOHandler* testIO = new FileIOHandler(globalValidName);
+	FileIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO->Write(messageToWrite.c_str()));
-
-	delete testIO;
+	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));
 }
 
 TEST(FileIOHandlerTestCase, WriteNegativeTest)
 {
-	FileIOHandler* testIO = new FileIOHandler(globalValidName);
+	FileIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO->Write(fakeMessageToWrite));
-
-	delete testIO;
+	EXPECT_TRUE(testIO.Write(fakeMessageToWrite, 0));
 }
 
 TEST(FileIOHandlerTestCase, ReadPosititveTest)
 {
-	FileIOHandler* testIO = new FileIOHandler(globalValidName);
+	FileIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO->Write(messageToWrite.c_str()));
+	messageToWrite.resize(MESSAGE_SIZE);
+	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));
+
+	testIO.ResetPosition();
 
 	std::string buffer;
+	buffer.resize(MESSAGE_SIZE);
 
-	EXPECT_TRUE(testIO->Read(buffer));
+	EXPECT_TRUE(testIO.Read(&buffer[0], buffer.size()));
 	EXPECT_EQ(messageToWrite, buffer);
-
-	delete testIO;
 }
 
 TEST(FileIOHandlerTestCase, ReadNegativeTest)
 {
 	const std::string locaValidName = "cfg.cfg";
-	FileIOHandler* testIO = new FileIOHandler(locaValidName);
+	FileIOHandler testIO(locaValidName);
 
 	std::string buffer;
-	EXPECT_FALSE(testIO->Read(buffer));
+	buffer.resize(MESSAGE_SIZE);
 
-	delete testIO;
+	EXPECT_FALSE(testIO.Read(&buffer[0], buffer.size()));
 }
 
 int main(int argc, char* argv[])

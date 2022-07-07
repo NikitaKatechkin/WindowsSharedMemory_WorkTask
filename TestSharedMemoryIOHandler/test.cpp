@@ -2,9 +2,11 @@
 
 #include <WindowsSharedMemory/SharedMemoryIOHandler.h>
 
-const std::string messageToWrite = "TESTING_STRING";
+const size_t MESSAGE_SIZE = 256;
+
+std::string messageToWrite = "TESTING_STRING";
 const char* fakeMessageToWrite = nullptr;
-const std::string emptyMessageToWrite = "";
+std::string emptyMessageToWrite = "";
 
 const std::string globalValidName = "Global\\MFMO";
 const std::string globalInvalidName[2] = { "Global\\\\MFMO",  "Global\\MF\\MO" };
@@ -32,46 +34,42 @@ TEST(SharedMemoryIOHandlerTestCase, CreationNegativeTest)
 
 TEST(SharedMemoryIOHandlerTestCase, WritePositiveTest)
 {
-	SharedMemoryIOHandler* testIO = new SharedMemoryIOHandler(globalValidName);
+	SharedMemoryIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO->Write(messageToWrite.c_str()));
-
-	delete testIO;
+	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));;
 }
 
 TEST(SharedMemoryIOHandlerTestCase, WriteNegativeTest)
 {
-	SharedMemoryIOHandler* testIO = new SharedMemoryIOHandler(globalValidName);
+	SharedMemoryIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO->Write(fakeMessageToWrite));
-
-	delete testIO;
+	EXPECT_TRUE(testIO.Write(fakeMessageToWrite, 0));
 }
 
 TEST(SharedMemoryIOHandlerTestCase, ReadPositiveTest)
 {
-	SharedMemoryIOHandler* testIO = new SharedMemoryIOHandler(globalValidName);
+	SharedMemoryIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO->Write(messageToWrite.c_str()));
+	messageToWrite.resize(MESSAGE_SIZE);
+	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));
 
 	std::string buffer;
+	buffer.resize(MESSAGE_SIZE);
 
-	EXPECT_TRUE(testIO->Read(buffer));
+	EXPECT_TRUE(testIO.Read(&buffer[0], buffer.size()));
 	EXPECT_EQ(messageToWrite, buffer);
-
-	delete testIO;
 }
 
 TEST(SharedMemoryIOHandlerTestCase, ReadNegativeTest)
 {
-	SharedMemoryIOHandler* testIO = new SharedMemoryIOHandler(globalValidName);
+	SharedMemoryIOHandler testIO(globalValidName);
+	emptyMessageToWrite.resize(MESSAGE_SIZE);
 
 	std::string buffer;
+	buffer.resize(MESSAGE_SIZE);
 
-	EXPECT_TRUE(testIO->Read(buffer));
+	EXPECT_TRUE(testIO.Read(&buffer[0], buffer.size()));
 	EXPECT_EQ(emptyMessageToWrite, buffer);
-
-	delete testIO;
 }
 
 int main(int argc, char* argv[])
