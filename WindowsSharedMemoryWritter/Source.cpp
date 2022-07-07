@@ -2,6 +2,7 @@
 #include <WindowsSharedMemory/ConfigToolbox.h>
 #include <WindowsSharedMemory/FileIOHandler.h>
 #include <WindowsSharedMemory/SharedMemoryIOHandler.h>
+#include <WindowsSharedMemory/Logger.h>
 #include <utility>
 #include <memory>
 
@@ -48,16 +49,18 @@ int main(int argc, char* argv[])
     HandlerAssigner(reader, READER_RESOURCE_NAME);
     HandlerAssigner(writter, WRITTER_RESOURCE_NAME);
 
+    Logger logger(true);
+
     std::string fileData;
     fileData.resize(256);
 
     if (reader.first->Read(&fileData[0], fileData.size()) == true)
     {
-        std::cout << "[Resource data]: " << fileData << std::endl;
+        logger.AddLog("[Resource data]: " + fileData);
 
         if (writter.first->Write(fileData.c_str(), fileData.length()) == true)
         {
-            std::cout << "Data successfully written to " << WRITTER_RESOURCE_NAME << std::endl;
+            logger.AddLog("Data successfully written to " + WRITTER_RESOURCE_NAME);
         }
     }
 
