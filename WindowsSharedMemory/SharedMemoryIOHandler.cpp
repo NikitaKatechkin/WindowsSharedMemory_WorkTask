@@ -18,10 +18,28 @@ SharedMemoryIOHandler::SharedMemoryIOHandler(const std::string& resourcePath, co
 		throw std::exception((std::string("[SharedMemoryIOHandler::SharedMemoryIOHandler()] >> ") +
 							  std::string("Failed to create a shared memory handler object.")).c_str());
 	}
+
+	m_sharedMemoryView = static_cast<char*>(MapViewOfFile(m_sharedMemoryHandle,
+														FILE_MAP_ALL_ACCESS,
+														0,
+														0,
+														m_sharedMemorySize));
+
+	if (m_sharedMemoryView == nullptr)
+	{
+		throw std::exception((std::string("[SharedMemoryIOHandler::SharedMemoryIOHandler()] >> ") +
+							  std::string("Failed to map a shared memory handler object.")).c_str());
+	}
 }
 
 SharedMemoryIOHandler::~SharedMemoryIOHandler()
 {
+	if (m_sharedMemoryView != nullptr)
+	{
+		UnmapViewOfFile(m_sharedMemoryView);
+		m_sharedMemoryView = nullptr;
+	}
+
 	if (m_sharedMemoryHandle != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(m_sharedMemoryHandle);
@@ -31,45 +49,26 @@ SharedMemoryIOHandler::~SharedMemoryIOHandler()
 
 bool SharedMemoryIOHandler::Read(char* buffer, size_t bytesToRead)
 {
-	bytesToRead = (bytesToRead > m_sharedMemorySize) ? m_sharedMemorySize : bytesToRead;
-
-	const char* sharedMemoryView = static_cast<const char*>(MapViewOfFile(m_sharedMemoryHandle,
-																		  FILE_MAP_ALL_ACCESS, 
-																		  0, 
-																		  0, 
-																		  m_sharedMemorySize));
-
-	bool isSuccess = (sharedMemoryView != nullptr);
-
-	if (isSuccess == true)
+	if (m_sharedMemoryView == nullptr || buffer == nullptr || bytesToRead <= 0)
 	{
-		memcpy_s(buffer, bytesToRead, sharedMemoryView, m_sharedMemorySize);
-		UnmapViewOfFile(sharedMemoryView);
+		return false;
 	}
+	
+	memcpy_s(buffer, (bytesToRead > m_sharedMemorySize) ? m_sharedMemorySize : bytesToRead, 
+			 m_sharedMemoryView, m_sharedMemorySize);
 
-	return isSuccess;
+	return true;
 }
 
 bool SharedMemoryIOHandler::Write(const char* data, size_t bytesToWrite)
 {
-	const char* sharedMemoryView = static_cast<const char*>(MapViewOfFile(m_sharedMemoryHandle,
-																		  FILE_MAP_ALL_ACCESS,
-																		  0,
-																		  0,
-																		  m_sharedMemorySize));
-
-	bool isSuccess = ((sharedMemoryView != nullptr) && (bytesToWrite <= m_sharedMemorySize));
-
-	if (isSuccess == true)
+	if (m_sharedMemoryView == nullptr || data == nullptr || bytesToWrite <= 0)
 	{
-		if (data != nullptr)
-		{
-			memcpy_s(const_cast<char*>(sharedMemoryView), m_sharedMemorySize, data, bytesToWrite);
-		}
-
-		UnmapViewOfFile(sharedMemoryView);
+		return false;
 	}
 
-	return isSuccess;
+	memcpy_s(m_sharedMemoryView, m_sharedMemorySize, data, bytesToWrite);
+
+	return true;
 }
 

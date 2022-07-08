@@ -16,5 +16,6 @@ public:
 
 protected:
 	HANDLE m_sharedMemoryHandle = NULL;
+	char* m_sharedMemoryView = nullptr;
 	size_t m_sharedMemorySize = 0;
 };

@@ -11,7 +11,7 @@ Logger::~Logger()
 
 	if (logFile.is_open() == true)
 	{
-		logFile << m_logHostory;
+		logFile << m_logHistory;
 	}
 
 	logFile.close();
@@ -29,5 +29,5 @@ void Logger::AddLog(std::string log)
 		std::cout << log << std::endl;
 	}
 
-	m_logHostory += (log + "\n");
+	m_logHistory += (log + "\n");
 }

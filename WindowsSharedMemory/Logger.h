@@ -14,6 +14,6 @@ public:
 
 private:
 	std::string m_logFilePath;
-	std::string m_logHostory;
-	bool m_isMuted;
+	std::string m_logHistory;
+	bool m_isMuted = false;
 };

@@ -36,7 +36,9 @@ TEST(SharedMemoryIOHandlerTestCase, WritePositiveTest)
 {
 	SharedMemoryIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));;
+	//Get code from SharedMemoryHandler out to check
+
+	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));
 }
 
 TEST(SharedMemoryIOHandlerTestCase, WriteNegativeTest)

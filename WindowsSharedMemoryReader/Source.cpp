@@ -13,17 +13,23 @@ enum class IOHandlerType
 };
 
 using BasicIOHandlerPtr = std::unique_ptr<BasicIOHandler>;
-using Handler = std::pair<BasicIOHandlerPtr, IOHandlerType>;
+using Handler = std::pair<BasicIOHandlerPtr, IOHandlerType>; //Rename
 
 int main(int argc, char* argv[])
 {
     if (argc != 5)
     {
+        //Add help
+
         return -1;
     }
 
+    //Change code-style
+
     const std::string READER_RESOURCE_NAME = std::string(argv[2]);
     const std::string WRITTER_RESOURCE_NAME = std::string(argv[4]);
+
+    //Add argv[] correct input
 
     const IOHandlerType READER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[1][0]) - 48));
     const IOHandlerType WRITTER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[3][0]) - 48));
