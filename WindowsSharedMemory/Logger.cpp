@@ -1,33 +1,29 @@
 #include "Logger.h"
 
-Logger::Logger(const bool isMuted, const std::string& logFilePath):
-	m_logFilePath(logFilePath), m_isMuted(isMuted)
+Logger::Logger(const std::string& logFilePath):
+	m_logStream(new std::ofstream(logFilePath))
 {
+	if (m_logStream->is_open() == false)
+	{
+		throw std::exception("Failed to create a log file.");
+	}
 }
 
 Logger::~Logger()
 {
-	std::ofstream logFile(m_logFilePath);
-
-	if (logFile.is_open() == true)
+	if (m_logStream != nullptr)
 	{
-		logFile << m_logHistory;
+		if (m_logStream->is_open() == true)
+		{
+			m_logStream->close();
+			delete m_logStream;
+		}
 	}
-
-	logFile.close();
-}
-
-void Logger::ChangeDisplayMode(const bool isMuted)
-{
-	m_isMuted = isMuted;
 }
 
 void Logger::AddLog(std::string log)
 {
-	if (m_isMuted == false)
-	{
-		std::cout << log << std::endl;
-	}
-
-	m_logHistory += (log + "\n");
+	std::ostream& currentStream = (m_logStream != nullptr) ? *m_logStream : std::cout;
+	
+	currentStream << log << std::endl;
 }

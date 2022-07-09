@@ -12,65 +12,81 @@ enum class IOHandlerType
     SharedMemoryHandler
 };
 
-using BasicIOHandlerPtr = std::unique_ptr<BasicIOHandler>;
-using Handler = std::pair<BasicIOHandlerPtr, IOHandlerType>; //Rename
+BasicIOHandler* HandlerAssigner(const IOHandlerType& handlerType, const std::string& resourcePath)
+{
+    BasicIOHandler* result = nullptr;
+
+    switch (handlerType)
+    {
+    case IOHandlerType::FileHandler:
+        result = new FileIOHandler(resourcePath);
+        break;
+    case IOHandlerType::SharedMemoryHandler:
+        result = new SharedMemoryIOHandler(resourcePath);
+        break;
+    default:
+        std::cout << "Unknown resource type were passed." << std::endl;
+        break;
+    };
+
+    return result;
+}
 
 int main(int argc, char* argv[])
 {
     if (argc != 5)
     {
-        //Add help
+        std::cout << "Wrong amount of arguments were passed to programm." << std::endl;
+        std::cout << "programm [type FROM resource] [path to FROM resource] ";
+        std::cout << "[type TO resource] [path to TO resource]";
+        std::cout << std::endl;
 
         return -1;
     }
 
-    //Change code-style
-
     const std::string READER_RESOURCE_NAME = std::string(argv[2]);
     const std::string WRITTER_RESOURCE_NAME = std::string(argv[4]);
 
-    //Add argv[] correct input
+    auto typeValidator = [](int argType) -> bool { return (argType == 0 || argType == 1); };
+
+    if ((typeValidator(static_cast<int>(argv[1][0]) - 48) == false) ||
+        (typeValidator(static_cast<int>(argv[3][0]) - 48) == false))
+    {
+        std::cout << "Non valid resource types were provided." << std::endl;
+
+        return -1;
+    }
 
     const IOHandlerType READER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[1][0]) - 48));
     const IOHandlerType WRITTER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[3][0]) - 48));
 
-    Handler reader = Handler(nullptr, READER_RESOURCE_TYPE);
-    Handler writter = Handler(nullptr, WRITTER_RESOURCE_TYPE);
+    BasicIOHandler* reader = HandlerAssigner(READER_RESOURCE_TYPE, READER_RESOURCE_NAME);;
+    BasicIOHandler* writter = HandlerAssigner(WRITTER_RESOURCE_TYPE, WRITTER_RESOURCE_NAME);;
 
-    auto HandlerAssigner = [](Handler& handler, const std::string& resourcePath) -> void {
-        switch (handler.second)
-        {
-        case IOHandlerType::FileHandler:
-            handler.first = BasicIOHandlerPtr(new FileIOHandler(resourcePath));
-            break;
-        case IOHandlerType::SharedMemoryHandler:
-            handler.first = BasicIOHandlerPtr(new SharedMemoryIOHandler(resourcePath));
-            break;
-        default:
-            std::cout << "Unknown resource type were passed." << std::endl;
-            break;
-        };
-    };
+    Logger consoleLogger;
+    Logger fileLogger("./log.txt");
 
-    HandlerAssigner(reader, READER_RESOURCE_NAME);
-    HandlerAssigner(writter, WRITTER_RESOURCE_NAME);
-
-    Logger logger(true);
+    const size_t BUFFER_SIZE = 256;
 
     std::string fileData;
-    fileData.resize(256);
+    fileData.resize(BUFFER_SIZE);
 
-    if (reader.first->Read(&fileData[0], fileData.size()) == true)
+    if (reader->Read(&fileData[0], fileData.size()) == true)
     {
-        logger.AddLog("[Resource data]: " + fileData);
+        consoleLogger.AddLog("[Resource data]: " + fileData);
+        fileLogger.AddLog("[Resource data]: " + fileData);
 
-        if (writter.first->Write(fileData.c_str(), fileData.length()) == true)
+        if (writter->Write(fileData.c_str(), fileData.length()) == true)
         {
-            logger.AddLog("Data successfully written to " + WRITTER_RESOURCE_NAME);
+            consoleLogger.AddLog("Data successfully written to " + WRITTER_RESOURCE_NAME);
+            fileLogger.AddLog("Data successfully written to " + WRITTER_RESOURCE_NAME);
         }
     }
 
     system("pause");
+
+    delete reader;
+    delete writter;
 
     return 0;
 }
