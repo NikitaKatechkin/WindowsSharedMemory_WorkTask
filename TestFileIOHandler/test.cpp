@@ -19,7 +19,21 @@ TEST(FileIOHandlerTestCase, WritePosititveTest)
 {
 	FileIOHandler testIO(globalValidName);
 
+	messageToWrite.resize(MESSAGE_SIZE);
 	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));
+
+	std::ifstream dataChecker(globalValidName);
+
+	EXPECT_TRUE(dataChecker.is_open());
+
+	std::string tmp_line, file;
+	while (std::getline(dataChecker, tmp_line))
+	{
+		file += tmp_line + "\n";
+	}
+	file.pop_back();
+
+	EXPECT_EQ(file, messageToWrite);
 }
 
 TEST(FileIOHandlerTestCase, WriteNegativeTest)

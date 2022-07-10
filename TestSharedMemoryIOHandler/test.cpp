@@ -11,6 +11,8 @@ std::string emptyMessageToWrite = "";
 const std::string globalValidName = "Global\\MFMO";
 const std::string globalInvalidName[2] = { "Global\\\\MFMO",  "Global\\MF\\MO" };
 
+using converter = std::wstring_convert<std::codecvt_utf8<wchar_t>>;
+
 TEST(SharedMemoryIOHandlerTestCase, CreationPositiveTest)
 {
 	SharedMemoryIOHandler* testIO = new SharedMemoryIOHandler(globalValidName);
@@ -36,9 +38,28 @@ TEST(SharedMemoryIOHandlerTestCase, WritePositiveTest)
 {
 	SharedMemoryIOHandler testIO(globalValidName);
 
-	//Get code from SharedMemoryHandler out to check
-
+	messageToWrite.resize(MESSAGE_SIZE);
 	EXPECT_TRUE(testIO.Write(messageToWrite.c_str(), messageToWrite.length()));
+
+	auto sharedMemoryReadHandle = CreateFileMapping(INVALID_HANDLE_VALUE,
+													nullptr,
+													PAGE_READWRITE,
+													0,
+													static_cast<DWORD>(MESSAGE_SIZE),
+													converter().from_bytes(globalValidName).c_str());
+
+	EXPECT_FALSE(sharedMemoryReadHandle == NULL);
+
+	auto sharedMemoryReadView = static_cast<char*>(MapViewOfFile(sharedMemoryReadHandle,
+																 FILE_MAP_ALL_ACCESS,
+																 0,
+																 0,
+																 MESSAGE_SIZE));
+
+	EXPECT_FALSE(sharedMemoryReadView == nullptr);
+	EXPECT_EQ(memcmp(sharedMemoryReadView, messageToWrite.c_str(), MESSAGE_SIZE), 0);
+
+	CloseHandle(sharedMemoryReadHandle);
 }
 
 TEST(SharedMemoryIOHandlerTestCase, WriteNegativeTest)
