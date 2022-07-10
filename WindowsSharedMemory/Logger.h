@@ -11,7 +11,8 @@ public:
 
 	~Logger();
 
-	void AddLog(std::string log);
+	void AddLog(const std::string& log);
+	friend void operator<<(Logger& logger, const std::string& log);
 
 private:
 	std::ofstream* m_logStream = nullptr;

@@ -21,9 +21,14 @@ Logger::~Logger()
 	}
 }
 
-void Logger::AddLog(std::string log)
+void Logger::AddLog(const std::string& log)
 {
 	std::ostream& currentStream = (m_logStream != nullptr) ? *m_logStream : std::cout;
 	
 	currentStream << log << std::endl;
+}
+
+void operator<<(Logger& logger, const std::string& log)
+{
+	logger.AddLog(log);
 }

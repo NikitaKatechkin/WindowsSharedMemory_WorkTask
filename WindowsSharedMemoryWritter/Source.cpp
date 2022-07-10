@@ -44,9 +44,6 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    const std::string READER_RESOURCE_NAME = std::string(argv[2]);
-    const std::string WRITTER_RESOURCE_NAME = std::string(argv[4]);
-
     auto typeValidator = [](int argType) -> bool { return (argType == 0 || argType == 1); };
 
     if ((typeValidator(static_cast<int>(argv[1][0]) - 48) == false) ||
@@ -57,29 +54,32 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    const IOHandlerType READER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[1][0]) - 48));
-    const IOHandlerType WRITTER_RESOURCE_TYPE = IOHandlerType((static_cast<int>(argv[3][0]) - 48));
+    const std::string readerResourceName = std::string(argv[2]);
+    const std::string writterResourceName = std::string(argv[4]);
 
-    BasicIOHandler* reader = HandlerAssigner(READER_RESOURCE_TYPE, READER_RESOURCE_NAME);;
-    BasicIOHandler* writter = HandlerAssigner(WRITTER_RESOURCE_TYPE, WRITTER_RESOURCE_NAME);;
+    const IOHandlerType readerResourceType = IOHandlerType((static_cast<int>(argv[1][0]) - 48));
+    const IOHandlerType writterResourceType = IOHandlerType((static_cast<int>(argv[3][0]) - 48));
+
+    BasicIOHandler* reader = HandlerAssigner(readerResourceType, readerResourceName);
+    BasicIOHandler* writter = HandlerAssigner(writterResourceType, writterResourceName);
 
     Logger consoleLogger;
     Logger fileLogger("./log.txt");
 
-    const size_t BUFFER_SIZE = 256;
+    const size_t bufferSize = 256;
 
     std::string fileData;
-    fileData.resize(BUFFER_SIZE);
+    fileData.resize(bufferSize);
 
     if (reader->Read(&fileData[0], fileData.size()) == true)
     {
-        consoleLogger.AddLog("[Resource data]: " + fileData);
-        fileLogger.AddLog("[Resource data]: " + fileData);
+        consoleLogger << ("[Resource data]: " + fileData);
+        fileLogger << ("[Resource data]: " + fileData);
 
         if (writter->Write(fileData.c_str(), fileData.length()) == true)
         {
-            consoleLogger.AddLog("Data successfully written to " + WRITTER_RESOURCE_NAME);
-            fileLogger.AddLog("Data successfully written to " + WRITTER_RESOURCE_NAME);
+            consoleLogger << ("Data successfully written to " + writterResourceName);
+            fileLogger << ("Data successfully written to " + writterResourceName);
         }
     }
 

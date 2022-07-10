@@ -26,7 +26,9 @@ TEST(FileIOHandlerTestCase, WriteNegativeTest)
 {
 	FileIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO.Write(fakeMessageToWrite, 0));
+	EXPECT_FALSE(testIO.Write(fakeMessageToWrite, 256));
+	EXPECT_FALSE(testIO.Write(messageToWrite.c_str(), 0));
+	EXPECT_FALSE(testIO.Write(fakeMessageToWrite, 0));
 }
 
 TEST(FileIOHandlerTestCase, ReadPosititveTest)
@@ -54,6 +56,12 @@ TEST(FileIOHandlerTestCase, ReadNegativeTest)
 	buffer.resize(MESSAGE_SIZE);
 
 	EXPECT_FALSE(testIO.Read(&buffer[0], buffer.size()));
+
+	FileIOHandler correctTestIO(globalValidName);
+
+	EXPECT_FALSE(testIO.Read(&buffer[0], 0));
+	EXPECT_FALSE(testIO.Read(const_cast<char*>(fakeMessageToWrite), 256));
+	EXPECT_FALSE(testIO.Read(const_cast<char*>(fakeMessageToWrite), 0));
 }
 
 int main(int argc, char* argv[])

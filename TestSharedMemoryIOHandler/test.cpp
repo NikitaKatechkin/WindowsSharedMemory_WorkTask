@@ -45,7 +45,7 @@ TEST(SharedMemoryIOHandlerTestCase, WriteNegativeTest)
 {
 	SharedMemoryIOHandler testIO(globalValidName);
 
-	EXPECT_TRUE(testIO.Write(fakeMessageToWrite, 0));
+	EXPECT_FALSE(testIO.Write(fakeMessageToWrite, 0));
 }
 
 TEST(SharedMemoryIOHandlerTestCase, ReadPositiveTest)
@@ -71,7 +71,13 @@ TEST(SharedMemoryIOHandlerTestCase, ReadNegativeTest)
 	buffer.resize(MESSAGE_SIZE);
 
 	EXPECT_TRUE(testIO.Read(&buffer[0], buffer.size()));
+
 	EXPECT_EQ(emptyMessageToWrite, buffer);
+
+	EXPECT_FALSE(testIO.Read(nullptr, buffer.size()));
+	EXPECT_FALSE(testIO.Read(&buffer[0], 0));
+	EXPECT_FALSE(testIO.Read(nullptr, 0));
+
 }
 
 int main(int argc, char* argv[])
